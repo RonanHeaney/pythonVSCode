@@ -328,11 +328,12 @@ export class Installer implements vscode.Disposable {
     }
     // tslint:disable-next-line:member-ordering
     public disableLinter(product: Product, resource: Uri) {
-        if (resource && !workspace.getWorkspaceFolder(resource)) {
+        if (resource && workspace.getWorkspaceFolder(resource)) {
             // tslint:disable-next-line:no-non-null-assertion
             const settingToDisable = SettingToDisableProduct.get(product)!;
             const pythonConfig = workspace.getConfiguration('python', resource);
-            return pythonConfig.update(settingToDisable, false, ConfigurationTarget.Workspace);
+            const configTarget = Array.isArray(workspace.workspaceFolders) && workspace.workspaceFolders.length > 1 ? ConfigurationTarget.WorkspaceFolder : ConfigurationTarget.Workspace;
+            return pythonConfig.update(settingToDisable, false, configTarget);
         } else {
             const pythonConfig = workspace.getConfiguration('python');
             return pythonConfig.update('linting.enabledWithoutWorkspace', false, true);
@@ -348,9 +349,10 @@ export class Installer implements vscode.Disposable {
     }
     // tslint:disable-next-line:no-any
     private updateSetting(setting: string, value: any, resource?: Uri) {
-        if (resource && !workspace.getWorkspaceFolder(resource)) {
+        if (resource && workspace.getWorkspaceFolder(resource)) {
             const pythonConfig = workspace.getConfiguration('python', resource);
-            return pythonConfig.update(setting, value, ConfigurationTarget.Workspace);
+            const configTarget = Array.isArray(workspace.workspaceFolders) && workspace.workspaceFolders.length > 1 ? ConfigurationTarget.WorkspaceFolder : ConfigurationTarget.Workspace;            
+            return pythonConfig.update(setting, value, configTarget);
         } else {
             const pythonConfig = workspace.getConfiguration('python');
             return pythonConfig.update(setting, value, true);
